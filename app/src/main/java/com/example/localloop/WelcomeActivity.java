@@ -25,4 +25,9 @@ public class WelcomeActivity extends AppCompatActivity {
         Intent i = new Intent(this, CategoryListActivity.class);
         startActivity(i);
     }
+
+    public void openMyEvents(View view) {
+        Intent i = new Intent(this, com.example.localloop.ui.organizer.MyEventsActivity.class);
+        startActivity(i);
+    }
 }
