@@ -1,11 +1,13 @@
 package com.example.localloop.ui.category;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 
@@ -17,6 +19,7 @@ import com.example.localloop.DatabaseHelper;
 import com.example.localloop.R;
 import com.example.localloop.model.Category;
 import com.example.localloop.model.Event;
+import com.example.localloop.DashboardActivity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +31,7 @@ public class SearchEventsActivity extends AppCompatActivity {
     private EditText editTextSearch;
     private Spinner spinnerCategory;
     private RecyclerView recyclerViewEvents;
+    private Button buttonReturn;
 
     private EventAdapter eventAdapter;
     private List<Event> allEvents = new ArrayList<>();
@@ -36,15 +40,20 @@ public class SearchEventsActivity extends AppCompatActivity {
     private Map<Integer, String> categoryMap = new HashMap<>();
 
     private DatabaseHelper dbHelper;
+    private String username, role;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_events);
 
+        username = getIntent().getStringExtra("username");
+        role = getIntent().getStringExtra("role");
+
         editTextSearch = findViewById(R.id.editTextSearch);
         spinnerCategory = findViewById(R.id.spinnerCategory);
         recyclerViewEvents = findViewById(R.id.recyclerViewEvents);
+        buttonReturn = findViewById(R.id.buttonReturn);
 
         dbHelper = new DatabaseHelper(this);
 
@@ -53,6 +62,14 @@ public class SearchEventsActivity extends AppCompatActivity {
         setupListeners();
 
         loadAllEvents();
+
+        buttonReturn.setOnClickListener(v -> {
+            Intent intent = new Intent(SearchEventsActivity.this, DashboardActivity.class);
+            intent.putExtra("username", username);
+            intent.putExtra("role", role);
+            startActivity(intent);
+            finish();
+        });
     }
 
     private void setupCategorySpinner() {

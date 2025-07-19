@@ -12,6 +12,7 @@ import com.example.localloop.DatabaseHelper;
 import com.example.localloop.R;
 import com.example.localloop.model.Category;
 import com.example.localloop.model.Event;
+import com.example.localloop.DashboardActivity;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -21,17 +22,22 @@ public class AddEventActivity extends AppCompatActivity {
 
     private EditText editTextName, editTextDescription, editTextFee;
     private Spinner spinnerCategory;
-    private Button buttonPickDate, buttonPickTime, buttonSubmit;
+    private Button buttonPickDate, buttonPickTime, buttonSubmit, buttonReturn;
     private TextView textViewDateTime;
 
     private DatabaseHelper dbHelper;
     private String selectedDate = "", selectedTime = "";
     private List<Category> categoryList;
+    private String username, role;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_event);
+
+        // Get role and username
+        username = getIntent().getStringExtra("username");
+        role = getIntent().getStringExtra("role");
 
         // Bind views
         editTextName = findViewById(R.id.editTextName);
@@ -42,6 +48,7 @@ public class AddEventActivity extends AppCompatActivity {
         buttonPickTime = findViewById(R.id.buttonPickTime);
         buttonSubmit = findViewById(R.id.buttonSubmit);
         textViewDateTime = findViewById(R.id.textViewDateTime);
+        buttonReturn = findViewById(R.id.buttonReturn);
 
         // DB helper
         dbHelper = new DatabaseHelper(this);
@@ -55,6 +62,15 @@ public class AddEventActivity extends AppCompatActivity {
 
         // Submit
         buttonSubmit.setOnClickListener(v -> submitEvent());
+
+        // Return button
+        buttonReturn.setOnClickListener(v -> {
+            Intent intent = new Intent(AddEventActivity.this, DashboardActivity.class);
+            intent.putExtra("username", username);
+            intent.putExtra("role", role);
+            startActivity(intent);
+            finish();
+        });
     }
 
     private void loadCategories() {

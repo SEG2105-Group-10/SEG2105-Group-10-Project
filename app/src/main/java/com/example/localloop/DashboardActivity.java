@@ -14,7 +14,7 @@ import com.example.localloop.ui.category.SearchEventsActivity;
 
 public class DashboardActivity extends AppCompatActivity {
 
-    private String username;
+    private String username, role;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,23 +22,44 @@ public class DashboardActivity extends AppCompatActivity {
         setContentView(R.layout.activity_dashboard);
 
         username = getIntent().getStringExtra("username");
+        role = getIntent().getStringExtra("role");
 
         TextView welcomeText = findViewById(R.id.welcomeMessage);
-        welcomeText.setText("Welcome, " + username + "!");
+        if (username != null) {
+            welcomeText.setText("Welcome, " + username + "!");
+        }
 
         Button buttonAddEvent = findViewById(R.id.buttonAddEvent);
         Button buttonManageCategories = findViewById(R.id.buttonManageCategories);
         Button buttonSearchEvents = findViewById(R.id.buttonSearchEvents);
         Button buttonLogout = findViewById(R.id.buttonLogout);
 
-        boolean isAdmin = "admin".equalsIgnoreCase(username);
+        boolean isAdmin = "admin".equalsIgnoreCase(role);
 
         buttonAddEvent.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
         buttonManageCategories.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
 
-        buttonAddEvent.setOnClickListener(v -> startActivity(new Intent(this, AddEventActivity.class)));
-        buttonManageCategories.setOnClickListener(v -> startActivity(new Intent(this, CategoryListActivity.class)));
-        buttonSearchEvents.setOnClickListener(v -> startActivity(new Intent(this, SearchEventsActivity.class)));
+        buttonAddEvent.setOnClickListener(v -> {
+            Intent intent = new Intent(this, AddEventActivity.class);
+            intent.putExtra("username", username);
+            intent.putExtra("role", role);
+            startActivity(intent);
+        });
+
+        buttonManageCategories.setOnClickListener(v -> {
+            Intent intent = new Intent(this, CategoryListActivity.class);
+            intent.putExtra("username", username);
+            intent.putExtra("role", role);
+            startActivity(intent);
+        });
+
+        buttonSearchEvents.setOnClickListener(v -> {
+            Intent intent = new Intent(this, SearchEventsActivity.class);
+            intent.putExtra("username", username);
+            intent.putExtra("role", role);
+            startActivity(intent);
+        });
+
         buttonLogout.setOnClickListener(v -> {
             Intent intent = new Intent(this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

@@ -42,12 +42,17 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Hardcoded admin check OR use database validation
-        if (("admin".equalsIgnoreCase(username) && "admin".equals(password)) ||
-                dbHelper.validateUser(username, password)) {
+        // Check credentials
+        boolean isAdmin = "admin".equalsIgnoreCase(username) && "admin".equals(password);
+        boolean isUserValid = dbHelper.validateUser(username, password);
+
+        if (isAdmin || isUserValid) {
+            // Determine role
+            String role = isAdmin ? "admin" : "user";
 
             Intent intent = new Intent(MainActivity.this, DashboardActivity.class);
             intent.putExtra("username", username);
+            intent.putExtra("role", role); // <--- This is the missing piece
             startActivity(intent);
             finish();
         } else {
