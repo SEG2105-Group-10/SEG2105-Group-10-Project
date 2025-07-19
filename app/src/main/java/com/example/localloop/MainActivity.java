@@ -1,73 +1,57 @@
 package com.example.localloop;
 
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-import com.example.localloop.model.Category;
-import com.example.localloop.ui.category.AddEventActivity;
-import com.example.localloop.ui.category.MyEventsActivity; // ✅ Import MyEventsActivity
+import com.example.localloop.DatabaseHelper;
 
 public class MainActivity extends AppCompatActivity {
 
-    private final String ADMIN_USERNAME = "admin";
-    private final String ADMIN_PASSWORD = "XPI76SZUqyCjVxgnUjm0";
+    private EditText editTextUsername;
+    private EditText editTextPassword;
+    private Button buttonLogin;
+
+    private DatabaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main); // Keep your original login layout
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        dbHelper = new DatabaseHelper(this);
 
-        DatabaseHelper dbHelper = new DatabaseHelper(this);
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        editTextUsername = findViewById(R.id.editTextUsername);
+        editTextPassword = findViewById(R.id.editTextPassword);
+        buttonLogin = findViewById(R.id.buttonLogin);
 
-        if (dbHelper.getAllCategories().isEmpty()) {
-            dbHelper.insertCategory(new Category("Test Category", "Temporary test category"));
+        buttonLogin.setOnClickListener(v -> handleLogin());
+    }
+
+    private void handleLogin() {
+        String username = editTextUsername.getText().toString().trim();
+        String password = editTextPassword.getText().toString().trim();
+
+        if (username.isEmpty() || password.isEmpty()) {
+            Toast.makeText(this, "Please enter both username and password.", Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        EditText usernameField = findViewById(R.id.usernameField);
-        EditText passwordField = findViewById(R.id.passwordField);
-        Button loginButton = findViewById(R.id.loginButton);
-        loginButton.setOnClickListener(v -> {
-            String inputUsername = usernameField.getText().toString();
-            String inputPassword = passwordField.getText().toString();
+        // Hardcoded admin check OR use database validation
+        if (("admin".equalsIgnoreCase(username) && "admin".equals(password)) ||
+                dbHelper.validateUser(username, password)) {
 
-            if (inputUsername.equals(ADMIN_USERNAME) && inputPassword.equals(ADMIN_PASSWORD)) {
-                Intent intent = new Intent(MainActivity.this, WelcomeActivity.class);
-                intent.putExtra("username", inputUsername);
-                startActivity(intent);
-            } else {
-                Toast.makeText(MainActivity.this, "Invalid credentials", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        Button addEventButton = findViewById(R.id.addEventButton);
-        addEventButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, AddEventActivity.class);
+            Intent intent = new Intent(MainActivity.this, DashboardActivity.class);
+            intent.putExtra("username", username);
             startActivity(intent);
-        });
-
-        // ✅ New button to open MyEventsActivity
-        Button viewMyEventsButton = findViewById(R.id.viewMyEventsButton);
-        viewMyEventsButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, MyEventsActivity.class);
-            startActivity(intent);
-        });
+            finish();
+        } else {
+            Toast.makeText(this, "Invalid login credentials.", Toast.LENGTH_SHORT).show();
+        }
     }
 }
