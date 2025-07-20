@@ -14,7 +14,7 @@ import com.example.localloop.ui.category.SearchEventsActivity;
 
 public class DashboardActivity extends AppCompatActivity {
 
-    private String username, role;
+    private String username, firstname, role;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,11 +22,12 @@ public class DashboardActivity extends AppCompatActivity {
         setContentView(R.layout.activity_dashboard);
 
         username = getIntent().getStringExtra("username");
+        firstname = getIntent().getStringExtra("firstname");
         role = getIntent().getStringExtra("role");
 
         TextView welcomeText = findViewById(R.id.welcomeMessage);
-        if (username != null) {
-            welcomeText.setText("Welcome, " + username + "!");
+        if (firstname != null && role != null) {
+            welcomeText.setText("Welcome " + firstname + "! You are logged in as \"" + role + "\".");
         }
 
         Button buttonAddEvent = findViewById(R.id.buttonAddEvent);

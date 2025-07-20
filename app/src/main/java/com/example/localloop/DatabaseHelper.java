@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.localloop.model.Category;
 import com.example.localloop.model.Event;
+import com.example.localloop.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     public static final String DATABASE_NAME = "LocalLoop.db";
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
 
     public static final String TABLE_USERS = "users";
     public static final String COLUMN_ID = "id";
@@ -26,7 +27,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             "CREATE TABLE " + TABLE_USERS + " (" +
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     COLUMN_USERNAME + " TEXT NOT NULL, " +
-                    COLUMN_PASSWORD + " TEXT NOT NULL);";
+                    COLUMN_PASSWORD + " TEXT NOT NULL, " +
+                    "firstname TEXT, " +
+                    "role TEXT);";
 
     public static final String TABLE_CATEGORIES = "categories";
     public static final String COLUMN_CAT_ID = "id";
@@ -68,6 +71,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_USERS);
         db.execSQL(CREATE_TABLE_CATEGORIES);
         db.execSQL(CREATE_TABLE_EVENTS);
+
+        // Insert predefined admin
+        ContentValues admin = new ContentValues();
+        admin.put(COLUMN_USERNAME, "admin");
+        admin.put(COLUMN_PASSWORD, "XPI76SZUqyCjVxgnUjm0");
+        admin.put("firstname", "Admin");
+        admin.put("role", "admin");
+        db.insert(TABLE_USERS, null, admin);
     }
 
     @Override
@@ -165,7 +176,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return rows;
     }
 
-    // method to get list of category names only
     public List<String> getAllCategoryNames() {
         List<String> names = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -184,15 +194,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return names;
     }
-    public boolean validateUser(String username, String password) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT * FROM " + TABLE_USERS + " WHERE " +
-                COLUMN_USERNAME + " = ? AND " + COLUMN_PASSWORD + " = ?";
-        Cursor cursor = db.rawQuery(query, new String[]{username, password});
-        boolean isValid = cursor.getCount() > 0;
-        cursor.close();
-        db.close();
-        return isValid;
-    }
 
+    public User getUser(String username, String password) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_USERS + " WHERE username=? AND password=?", new String[]{username, password});
+        if (cursor.moveToFirst()) {
+            User user = new User();
+            user.setUsername(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USERNAME)));
+            user.setFirstName(cursor.getString(cursor.getColumnIndexOrThrow("firstname")));
+            user.setRole(cursor.getString(cursor.getColumnIndexOrThrow("role")));
+            cursor.close();
+            return user;
+        }
+        cursor.close();
+        return null;
+    }
 }

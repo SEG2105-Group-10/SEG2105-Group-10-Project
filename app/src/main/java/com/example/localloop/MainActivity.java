@@ -9,7 +9,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.localloop.DatabaseHelper;
+import com.example.localloop.model.User;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -42,17 +42,12 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Check credentials
-        boolean isAdmin = "admin".equalsIgnoreCase(username) && "admin".equals(password);
-        boolean isUserValid = dbHelper.validateUser(username, password);
-
-        if (isAdmin || isUserValid) {
-            // Determine role
-            String role = isAdmin ? "admin" : "user";
-
+        User user = dbHelper.getUser(username, password);
+        if (user != null) {
             Intent intent = new Intent(MainActivity.this, DashboardActivity.class);
-            intent.putExtra("username", username);
-            intent.putExtra("role", role); // <--- This is the missing piece
+            intent.putExtra("username", user.getUsername());
+            intent.putExtra("firstname", user.getFirstName());
+            intent.putExtra("role", user.getRole());
             startActivity(intent);
             finish();
         } else {
