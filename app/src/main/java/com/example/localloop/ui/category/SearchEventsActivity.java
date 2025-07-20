@@ -95,7 +95,20 @@ public class SearchEventsActivity extends AppCompatActivity {
         eventAdapter = new EventAdapter(filteredEvents, role, new EventAdapter.OnEventActionListener() {
             @Override
             public void onEditClick(Event event) {
-                // Optional: implement admin edit logic
+                if ("admin".equalsIgnoreCase(role)) {
+                    Intent intent = new Intent(SearchEventsActivity.this, EditEventActivity.class);
+                    intent.putExtra("eventId", event.getId());
+                    startActivity(intent);
+                }
+            }
+
+            @Override
+            public void onDeleteClick(Event event) {
+                if ("admin".equalsIgnoreCase(role)) {
+                    dbHelper.deleteEventById(event.getId());
+                    Toast.makeText(SearchEventsActivity.this, "Event deleted", Toast.LENGTH_SHORT).show();
+                    loadAllEvents();
+                }
             }
 
             @Override

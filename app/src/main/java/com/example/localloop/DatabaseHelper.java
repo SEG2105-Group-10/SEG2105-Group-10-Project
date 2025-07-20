@@ -253,4 +253,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("eventId", eventId);
         db.insert(TABLE_EVENT_JOINS, null, values);
     }
+
+    public void deleteCategoryById(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_CATEGORIES, COLUMN_CAT_ID + " = ?", new String[]{String.valueOf(id)});
+        db.close();
+    }
+
+    public void deleteEventById(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_EVENTS, COLUMN_EVENT_ID + " = ?", new String[]{String.valueOf(id)});
+        db.close();
+    }
+
 }

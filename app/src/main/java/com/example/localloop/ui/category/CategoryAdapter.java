@@ -18,15 +18,18 @@ import java.util.function.Consumer;
 
 public class CategoryAdapter extends ListAdapter<Category, CategoryAdapter.VH> {
 
-    interface EditClick extends Consumer<Integer>{}
-    private final EditClick editClick;
+    interface EditClick extends Consumer<Integer> {}
+    interface DeleteClick extends Consumer<Integer> {}
 
-    public CategoryAdapter(EditClick e) {
+    private final EditClick editClick;
+    private final DeleteClick deleteClick;
+
+    public CategoryAdapter(EditClick e, DeleteClick d) {
         super(DIFF);
         this.editClick = e;
+        this.deleteClick = d;
     }
 
-    /** --- FIXED block: both abstract methods implemented --- */
     private static final DiffUtil.ItemCallback<Category> DIFF =
             new DiffUtil.ItemCallback<Category>() {
                 @Override
@@ -43,18 +46,21 @@ public class CategoryAdapter extends ListAdapter<Category, CategoryAdapter.VH> {
                 }
             };
 
-    /* ---------- ViewHolder ---------- */
     static class VH extends RecyclerView.ViewHolder {
-        TextView title, desc; Button edit;
+        TextView title, desc;
+        Button edit, delete;
+
         VH(View v) {
             super(v);
             title = v.findViewById(R.id.textTitle);
-            desc  = v.findViewById(R.id.textDesc);
-            edit  = v.findViewById(R.id.btnEdit);
+            desc = v.findViewById(R.id.textDesc);
+            edit = v.findViewById(R.id.btnEdit);
+            delete = v.findViewById(R.id.btnDelete);
         }
     }
 
-    @NonNull @Override
+    @NonNull
+    @Override
     public VH onCreateViewHolder(@NonNull ViewGroup p, int vType) {
         View v = LayoutInflater.from(p.getContext())
                 .inflate(R.layout.item_category, p, false);
@@ -65,8 +71,8 @@ public class CategoryAdapter extends ListAdapter<Category, CategoryAdapter.VH> {
     public void onBindViewHolder(@NonNull VH h, int pos) {
         Category c = getItem(pos);
         h.title.setText(c.getName());
-        h.desc .setText(c.getDescription());
+        h.desc.setText(c.getDescription());
         h.edit.setOnClickListener(v -> editClick.accept(c.getId()));
-        //setOnClickListener
+        h.delete.setOnClickListener(v -> deleteClick.accept(c.getId()));
     }
 }

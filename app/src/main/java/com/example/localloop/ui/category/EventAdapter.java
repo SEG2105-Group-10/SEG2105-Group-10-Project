@@ -22,6 +22,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
 
     public interface OnEventActionListener {
         void onEditClick(Event event);
+        void onDeleteClick(Event event);
         void onJoinClick(Event event);
     }
 
@@ -46,13 +47,16 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
 
         if ("admin".equalsIgnoreCase(role)) {
             holder.buttonEdit.setVisibility(View.VISIBLE);
+            holder.buttonDelete.setVisibility(View.VISIBLE);
             holder.buttonJoin.setVisibility(View.GONE);
         } else {
             holder.buttonEdit.setVisibility(View.GONE);
+            holder.buttonDelete.setVisibility(View.GONE);
             holder.buttonJoin.setVisibility(View.VISIBLE);
         }
 
         holder.buttonEdit.setOnClickListener(v -> listener.onEditClick(event));
+        holder.buttonDelete.setOnClickListener(v -> listener.onDeleteClick(event));
         holder.buttonJoin.setOnClickListener(v -> listener.onJoinClick(event));
     }
 
@@ -63,13 +67,14 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView textViewName, textViewDateTime;
-        Button buttonEdit, buttonJoin;
+        Button buttonEdit, buttonDelete, buttonJoin;
 
         ViewHolder(View itemView) {
             super(itemView);
             textViewName = itemView.findViewById(R.id.textViewName);
             textViewDateTime = itemView.findViewById(R.id.textViewDateTime);
             buttonEdit = itemView.findViewById(R.id.buttonEdit);
+            buttonDelete = itemView.findViewById(R.id.buttonDelete);
             buttonJoin = itemView.findViewById(R.id.buttonJoin);
         }
     }
