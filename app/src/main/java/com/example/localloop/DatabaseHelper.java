@@ -16,7 +16,7 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     public static final String DATABASE_NAME = "LocalLoop.db";
-    public static final int DATABASE_VERSION = 2;
+    public static final int DATABASE_VERSION = 3;
 
     public static final String TABLE_USERS = "users";
     public static final String COLUMN_ID = "id";
@@ -72,7 +72,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_CATEGORIES);
         db.execSQL(CREATE_TABLE_EVENTS);
 
-        // Insert predefined admin
         ContentValues admin = new ContentValues();
         admin.put(COLUMN_USERNAME, "admin");
         admin.put(COLUMN_PASSWORD, "XPI76SZUqyCjVxgnUjm0");
@@ -89,6 +88,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    public long insertUser(User user, String password) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_USERNAME, user.getUsername());
+        values.put(COLUMN_PASSWORD, password);
+        values.put("firstname", user.getFirstName());
+        values.put("role", user.getRole());
+        long id = db.insert(TABLE_USERS, null, values);
+        db.close();
+        return id;
+    }
+
     public long insertEvent(Event event) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -98,7 +109,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_EVENT_CATEGORY_ID, event.getCategoryId());
         values.put(COLUMN_EVENT_DATE, event.getDate());
         values.put(COLUMN_EVENT_TIME, event.getTime());
-
         long id = db.insert(TABLE_EVENTS, null, values);
         db.close();
         return id;
@@ -117,11 +127,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public List<Category> getAllCategories() {
         List<Category> categories = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-
         Cursor cursor = db.query(TABLE_CATEGORIES,
                 new String[]{COLUMN_CAT_ID, COLUMN_CAT_NAME, "description"},
                 null, null, null, null, null);
-
         if (cursor.moveToFirst()) {
             do {
                 Category category = new Category();
@@ -139,10 +147,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public List<Event> getAllEvents() {
         List<Event> events = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-
-        Cursor cursor = db.query(TABLE_EVENTS,
-                null, null, null, null, null, null);
-
+        Cursor cursor = db.query(TABLE_EVENTS, null, null, null, null, null, null);
         if (cursor.moveToFirst()) {
             do {
                 Event event = new Event();
@@ -170,7 +175,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_EVENT_CATEGORY_ID, event.getCategoryId());
         values.put(COLUMN_EVENT_DATE, event.getDate());
         values.put(COLUMN_EVENT_TIME, event.getTime());
-
         int rows = db.update(TABLE_EVENTS, values, COLUMN_EVENT_ID + " = ?", new String[]{String.valueOf(event.getId())});
         db.close();
         return rows;
@@ -179,17 +183,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public List<String> getAllCategoryNames() {
         List<String> names = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-
-        Cursor cursor = db.query(TABLE_CATEGORIES,
-                new String[]{COLUMN_CAT_NAME},
-                null, null, null, null, null);
-
+        Cursor cursor = db.query(TABLE_CATEGORIES, new String[]{COLUMN_CAT_NAME}, null, null, null, null, null);
         if (cursor.moveToFirst()) {
             do {
                 names.add(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CAT_NAME)));
             } while (cursor.moveToNext());
         }
-
         cursor.close();
         db.close();
         return names;

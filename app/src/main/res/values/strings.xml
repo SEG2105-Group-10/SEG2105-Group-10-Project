@@ -5,4 +5,9 @@
     <string name="login_button">Login</string>
     <string name="msg_empty_fields">Fields must not be empty</string>
     <string name="msg_duplicate_category">Duplicate category name</string>
+
+    <string-array name="roles_array">
+        <item>Organizer</item>
+        <item>Participant</item>
+    </string-array>
 </resources>

@@ -2,10 +2,11 @@ package com.example.localloop;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+import com.example.localloop.R;
+import com.example.localloop.ui.category.SignupActivity;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -16,21 +17,27 @@ public class MainActivity extends AppCompatActivity {
     private EditText editTextUsername;
     private EditText editTextPassword;
     private Button buttonLogin;
+    private Button buttonSignup;
 
     private DatabaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main); // Keep your original login layout
+        setContentView(R.layout.activity_main);
 
         dbHelper = new DatabaseHelper(this);
 
         editTextUsername = findViewById(R.id.editTextUsername);
         editTextPassword = findViewById(R.id.editTextPassword);
         buttonLogin = findViewById(R.id.buttonLogin);
+        buttonSignup = findViewById(R.id.buttonSignup);
 
         buttonLogin.setOnClickListener(v -> handleLogin());
+        buttonSignup.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, SignupActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void handleLogin() {

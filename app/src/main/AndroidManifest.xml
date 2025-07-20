@@ -30,5 +30,8 @@
         <activity android:name=".ui.category.EditEventActivity" android:exported="false" />
         <activity android:name=".ui.category.SearchEventsActivity" android:exported="false" />
 
+        <!-- Signup screen -->
+        <activity android:name=".ui.category.SignupActivity" android:exported="false" />
+
     </application>
 </manifest>
