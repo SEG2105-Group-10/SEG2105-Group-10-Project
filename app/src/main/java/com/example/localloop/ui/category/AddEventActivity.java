@@ -79,10 +79,14 @@ public class AddEventActivity extends AppCompatActivity {
         for (Category c : categoryList) {
             names.add(c.getName());
         }
+        if (names.isEmpty()) {
+            Toast.makeText(this, "No categories available. Please add one.", Toast.LENGTH_LONG).show();
+        }
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, names);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCategory.setAdapter(adapter);
     }
+
 
     private void pickDate() {
         Calendar c = Calendar.getInstance();

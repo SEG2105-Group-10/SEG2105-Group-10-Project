@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.localloop.ui.category.AddEventActivity;
 import com.example.localloop.ui.category.CategoryListActivity;
 import com.example.localloop.ui.category.SearchEventsActivity;
+import com.example.localloop.ui.category.ParticipantJoinEventsActivity;
 
 public class DashboardActivity extends AppCompatActivity {
 
@@ -33,12 +34,15 @@ public class DashboardActivity extends AppCompatActivity {
         Button buttonAddEvent = findViewById(R.id.buttonAddEvent);
         Button buttonManageCategories = findViewById(R.id.buttonManageCategories);
         Button buttonSearchEvents = findViewById(R.id.buttonSearchEvents);
+        Button buttonJoinEvents = findViewById(R.id.buttonJoinEvents);
         Button buttonLogout = findViewById(R.id.buttonLogout);
 
         boolean isAdmin = "admin".equalsIgnoreCase(role);
+        boolean isParticipant = "participant".equalsIgnoreCase(role);
 
         buttonAddEvent.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
         buttonManageCategories.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
+        buttonJoinEvents.setVisibility(isParticipant ? View.VISIBLE : View.GONE);
 
         buttonAddEvent.setOnClickListener(v -> {
             Intent intent = new Intent(this, AddEventActivity.class);
@@ -57,6 +61,14 @@ public class DashboardActivity extends AppCompatActivity {
         buttonSearchEvents.setOnClickListener(v -> {
             Intent intent = new Intent(this, SearchEventsActivity.class);
             intent.putExtra("username", username);
+            intent.putExtra("role", role);
+            startActivity(intent);
+        });
+
+        buttonJoinEvents.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ParticipantJoinEventsActivity.class);
+            intent.putExtra("username", username);
+            intent.putExtra("firstname", firstname);
             intent.putExtra("role", role);
             startActivity(intent);
         });

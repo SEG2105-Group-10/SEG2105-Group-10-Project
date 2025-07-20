@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -91,8 +92,21 @@ public class SearchEventsActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView() {
-        eventAdapter = new EventAdapter(filteredEvents, event -> {
-            // You can define behavior on event click if needed
+        eventAdapter = new EventAdapter(filteredEvents, role, new EventAdapter.OnEventActionListener() {
+            @Override
+            public void onEditClick(Event event) {
+                // Optional: implement admin edit logic
+            }
+
+            @Override
+            public void onJoinClick(Event event) {
+                if (!dbHelper.hasUserJoinedEvent(username, event.getId())) {
+                    dbHelper.joinEvent(username, event.getId());
+                    Toast.makeText(SearchEventsActivity.this, "You have joined this event!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(SearchEventsActivity.this, "You already joined this event.", Toast.LENGTH_SHORT).show();
+                }
+            }
         });
         recyclerViewEvents.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewEvents.setAdapter(eventAdapter);
@@ -116,7 +130,7 @@ public class SearchEventsActivity extends AppCompatActivity {
     }
 
     private void loadAllEvents() {
-        allEvents = dbHelper.getAllEvents(); // Already exists
+        allEvents = dbHelper.getAllEvents();
         filterEvents();
     }
 

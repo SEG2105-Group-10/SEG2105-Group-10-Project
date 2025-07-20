@@ -62,6 +62,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     "FOREIGN KEY(" + COLUMN_EVENT_CATEGORY_ID + ") REFERENCES " +
                     TABLE_CATEGORIES + "(" + COLUMN_CAT_ID + "));";
 
+    public static final String TABLE_EVENT_JOINS = "EventJoins";
+
+    private static final String CREATE_TABLE_EVENT_JOINS =
+            "CREATE TABLE IF NOT EXISTS " + TABLE_EVENT_JOINS + " (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "username TEXT, " +
+                    "eventId INTEGER);";
+
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -71,13 +79,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_USERS);
         db.execSQL(CREATE_TABLE_CATEGORIES);
         db.execSQL(CREATE_TABLE_EVENTS);
+        db.execSQL(CREATE_TABLE_EVENT_JOINS); // new table for joins
 
+        // Default admin account
         ContentValues admin = new ContentValues();
         admin.put(COLUMN_USERNAME, "admin");
         admin.put(COLUMN_PASSWORD, "XPI76SZUqyCjVxgnUjm0");
         admin.put("firstname", "Admin");
         admin.put("role", "admin");
         db.insert(TABLE_USERS, null, admin);
+
+        // Default categories
+        ContentValues cat1 = new ContentValues();
+        cat1.put(COLUMN_CAT_NAME, "Sports");
+        cat1.put("description", "Sports events");
+        db.insert(TABLE_CATEGORIES, null, cat1);
+
+        ContentValues cat2 = new ContentValues();
+        cat2.put(COLUMN_CAT_NAME, "Tech");
+        cat2.put("description", "Tech-related events");
+        db.insert(TABLE_CATEGORIES, null, cat2);
+
+        ContentValues cat3 = new ContentValues();
+        cat3.put(COLUMN_CAT_NAME, "Music");
+        cat3.put("description", "Musical events and shows");
+        db.insert(TABLE_CATEGORIES, null, cat3);
     }
 
     @Override
@@ -85,6 +111,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_CATEGORIES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_EVENTS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_EVENT_JOINS);
         onCreate(db);
     }
 
@@ -207,5 +234,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return null;
+    }
+
+    // Check if a user has joined an event
+    public boolean hasUserJoinedEvent(String username, int eventId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_EVENT_JOINS + " WHERE username = ? AND eventId = ?", new String[]{username, String.valueOf(eventId)});
+        boolean exists = cursor.moveToFirst();
+        cursor.close();
+        return exists;
+    }
+
+    // Add a user to an event
+    public void joinEvent(String username, int eventId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("username", username);
+        values.put("eventId", eventId);
+        db.insert(TABLE_EVENT_JOINS, null, values);
     }
 }

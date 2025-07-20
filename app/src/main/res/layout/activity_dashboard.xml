@@ -34,6 +34,12 @@
         android:text="My Events" />
 
     <Button
+        android:id="@+id/buttonJoinEvents"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Join Events" />
+
+    <Button
         android:id="@+id/buttonLogout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
