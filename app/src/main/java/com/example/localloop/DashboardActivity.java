@@ -67,16 +67,8 @@ public class DashboardActivity extends AppCompatActivity {
                 startActivity(intent);
             });
         } else if ("admin".equals(role)) {
-            addEventBtn.setVisibility(View.VISIBLE);
+            // Do not show Add Event button for admins
             categoryBtn.setVisibility(View.VISIBLE);
-
-            addEventBtn.setText("Create Event");
-            addEventBtn.setOnClickListener(v -> {
-                Intent intent = new Intent(this, AddEventActivity.class);
-                intent.putExtra("username", username);
-                intent.putExtra("role", role);
-                startActivity(intent);
-            });
 
             categoryBtn.setOnClickListener(v -> {
                 Intent intent = new Intent(this, CategoryListActivity.class);
@@ -91,5 +83,6 @@ public class DashboardActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
+
     }
 }

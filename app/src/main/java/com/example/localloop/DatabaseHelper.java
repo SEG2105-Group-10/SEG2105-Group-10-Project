@@ -342,6 +342,44 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
+    public int updateCategory(Category c) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("name", c.getName());
+        values.put("description", c.getDescription());
+        int rows = db.update(TABLE_CATEGORIES, values, COLUMN_CAT_ID + " = ?", new String[]{String.valueOf(c.getId())});
+        db.close();
+        return rows;
+    }
+
+    public Category getCategoryById(int id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cur = db.query(TABLE_CATEGORIES, null,
+                COLUMN_CAT_ID + "=?", new String[]{String.valueOf(id)},
+                null, null, null);
+        if (!cur.moveToFirst()) {
+            cur.close();
+            return null;
+        }
+        Category c = new Category(
+                cur.getInt(cur.getColumnIndexOrThrow(COLUMN_CAT_ID)),
+                cur.getString(cur.getColumnIndexOrThrow(COLUMN_CAT_NAME)),
+                cur.getString(cur.getColumnIndexOrThrow("description")));
+        cur.close();
+        db.close();
+        return c;
+    }
+
+    public boolean categoryNameExists(String name, int excludeId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery("SELECT 1 FROM " + TABLE_CATEGORIES +
+                        " WHERE " + COLUMN_CAT_NAME + "=? AND " + COLUMN_CAT_ID + "!=?",
+                new String[]{name, String.valueOf(excludeId)});
+        boolean exists = c.moveToFirst();
+        c.close();
+        db.close();
+        return exists;
+    }
 
 
 }
