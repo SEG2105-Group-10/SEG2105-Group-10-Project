@@ -30,7 +30,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_USERNAME + " TEXT NOT NULL, " +
                     COLUMN_PASSWORD + " TEXT NOT NULL, " +
                     "firstname TEXT, " +
-                    "role TEXT);";
+                    "role TEXT, " +
+                    "disabled INTEGER DEFAULT 0);";
+
 
     public static final String TABLE_CATEGORIES = "categories";
     public static final String COLUMN_CAT_ID = "id";
@@ -234,6 +236,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             user.setUsername(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USERNAME)));
             user.setFirstName(cursor.getString(cursor.getColumnIndexOrThrow("firstname")));
             user.setRole(cursor.getString(cursor.getColumnIndexOrThrow("role")));
+            user.setDisabled(cursor.getInt(cursor.getColumnIndexOrThrow("disabled")) == 1);  // 👈 critical fix
             cursor.close();
             return user;
         }
@@ -380,6 +383,34 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return exists;
     }
+
+    public List<User> getAllNonAdminUsers() {
+        List<User> users = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM Users WHERE role != 'admin'", null);
+        while (cursor.moveToNext()) {
+            User user = new User();
+            user.setUsername(cursor.getString(cursor.getColumnIndexOrThrow("username")));
+            user.setRole(cursor.getString(cursor.getColumnIndexOrThrow("role")));
+            user.setDisabled(cursor.getInt(cursor.getColumnIndexOrThrow("disabled")) == 1);
+            users.add(user);
+        }
+        cursor.close();
+        return users;
+    }
+
+    public void setUserDisabled(String username, boolean disabled) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("disabled", disabled ? 1 : 0);
+        db.update("Users", values, "username=?", new String[]{username});
+    }
+
+    public void deleteUserByUsername(String username) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete("Users", "username=?", new String[]{username});
+    }
+
 
 
 }

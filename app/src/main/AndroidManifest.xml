@@ -36,5 +36,7 @@
         <activity android:name=".ui.category.ParticipantJoinEventsActivity" />
 
         <activity android:name=".ui.category.ManageJoinRequestsActivity" />
+
+        <activity android:name=".ui.category.ManageUsersActivity" />
     </application>
 </manifest>

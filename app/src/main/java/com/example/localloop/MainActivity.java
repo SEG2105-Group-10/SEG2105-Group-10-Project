@@ -51,12 +51,16 @@ public class MainActivity extends AppCompatActivity {
 
         User user = dbHelper.getUser(username, password);
         if (user != null) {
-            Intent intent = new Intent(MainActivity.this, DashboardActivity.class);
-            intent.putExtra("username", user.getUsername());
-            intent.putExtra("firstname", user.getFirstName());
-            intent.putExtra("role", user.getRole());
-            startActivity(intent);
-            finish();
+            if (user.isDisabled()) {
+                Toast.makeText(this, "Your account has been disabled by the admin.", Toast.LENGTH_LONG).show();
+            } else {
+                Intent intent = new Intent(MainActivity.this, DashboardActivity.class);
+                intent.putExtra("username", user.getUsername());
+                intent.putExtra("firstname", user.getFirstName());
+                intent.putExtra("role", user.getRole());
+                startActivity(intent);
+                finish();
+            }
         } else {
             Toast.makeText(this, "Invalid login credentials.", Toast.LENGTH_SHORT).show();
         }
