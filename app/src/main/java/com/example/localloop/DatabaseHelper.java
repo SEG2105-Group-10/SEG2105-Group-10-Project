@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.localloop.model.Category;
 import com.example.localloop.model.Event;
+import com.example.localloop.model.JoinRequest;
 import com.example.localloop.model.User;
 
 import java.util.ArrayList;
@@ -59,8 +60,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_EVENT_CATEGORY_ID + " INTEGER, " +
                     COLUMN_EVENT_DATE + " TEXT, " +
                     COLUMN_EVENT_TIME + " TEXT, " +
+                    "organizerUsername TEXT, " +
                     "FOREIGN KEY(" + COLUMN_EVENT_CATEGORY_ID + ") REFERENCES " +
                     TABLE_CATEGORIES + "(" + COLUMN_CAT_ID + "));";
+
 
     public static final String TABLE_EVENT_JOINS = "EventJoins";
 
@@ -68,7 +71,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             "CREATE TABLE IF NOT EXISTS " + TABLE_EVENT_JOINS + " (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     "username TEXT, " +
-                    "eventId INTEGER);";
+                    "eventId INTEGER, " +
+                    "status TEXT);";
+
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -251,7 +256,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put("username", username);
         values.put("eventId", eventId);
-        db.insert(TABLE_EVENT_JOINS, null, values);
+        values.put("status", "pending");
+        db.insert("EventJoins", null, values);
+        db.close();
     }
 
     public void deleteCategoryById(int id) {
@@ -265,5 +272,76 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.delete(TABLE_EVENTS, COLUMN_EVENT_ID + " = ?", new String[]{String.valueOf(id)});
         db.close();
     }
+
+    public List<Event> getEventsByOrganizer(String organizerUsername) {
+        List<Event> eventList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM Events WHERE organizerUsername = ?", new String[]{organizerUsername});
+        if (cursor.moveToFirst()) {
+            do {
+                Event event = new Event();
+                event.setId(cursor.getInt(cursor.getColumnIndexOrThrow("id")));
+                event.setName(cursor.getString(cursor.getColumnIndexOrThrow("name")));
+                event.setDescription(cursor.getString(cursor.getColumnIndexOrThrow("description")));
+                event.setFee(cursor.getDouble(cursor.getColumnIndexOrThrow("fee")));
+                event.setCategoryId(cursor.getInt(cursor.getColumnIndexOrThrow("categoryId")));
+                event.setDate(cursor.getString(cursor.getColumnIndexOrThrow("date")));
+                event.setTime(cursor.getString(cursor.getColumnIndexOrThrow("time")));
+                event.setOrganizerUsername(cursor.getString(cursor.getColumnIndexOrThrow("organizerUsername")));
+                eventList.add(event);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return eventList;
+    }
+
+    public List<JoinRequest> getJoinRequestsByOrganizer(String organizerUsername) {
+        List<JoinRequest> requests = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT r.id, r.eventId, r.username, r.status " +
+                "FROM EventJoins r INNER JOIN Events e ON r.eventId = e.id " +
+                "WHERE e.organizerUsername = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{organizerUsername});
+        if (cursor.moveToFirst()) {
+            do {
+                JoinRequest jr = new JoinRequest();
+                jr.setId(cursor.getInt(0));
+                jr.setEventId(cursor.getInt(1));
+                jr.setAttendeeUsername(cursor.getString(2));
+                jr.setStatus(cursor.getString(3));
+                requests.add(jr);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return requests;
+    }
+
+
+
+    public void updateRequestStatus(int requestId, String status) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("status", status);
+        db.update("EventJoins", values, "id = ?", new String[]{String.valueOf(requestId)});
+    }
+
+    public void addEvent(Event event) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("name", event.getName());
+        values.put("description", event.getDescription());
+        values.put("fee", event.getFee());
+        values.put("categoryId", event.getCategoryId());
+        values.put("date", event.getDate());
+        values.put("time", event.getTime());
+        values.put("organizerUsername", event.getOrganizerUsername());
+
+        db.insert("Events", null, values);
+        db.close();
+    }
+
+
 
 }

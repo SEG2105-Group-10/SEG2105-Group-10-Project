@@ -34,5 +34,7 @@
         <activity android:name=".ui.category.SignupActivity" android:exported="false" />
 
         <activity android:name=".ui.category.ParticipantJoinEventsActivity" />
+
+        <activity android:name=".ui.category.ManageJoinRequestsActivity" />
     </application>
 </manifest>

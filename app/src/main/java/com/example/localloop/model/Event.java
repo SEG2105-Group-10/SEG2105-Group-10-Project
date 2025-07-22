@@ -8,6 +8,7 @@ public class Event {
     private int categoryId;
     private String date; // Or use long timestamp if you prefer
     private String time;
+    private String organizerUsername;
 
     public Event() {
     }
@@ -43,4 +44,12 @@ public class Event {
 
     public String getTime() { return time; }
     public void setTime(String time) { this.time = time; }
+
+    public String getOrganizerUsername() {
+        return organizerUsername;
+    }
+
+    public void setOrganizerUsername(String organizerUsername) {
+        this.organizerUsername = organizerUsername;
+    }
 }

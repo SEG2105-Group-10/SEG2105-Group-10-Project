@@ -5,27 +5,16 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Spinner;
-import android.widget.Toast;
-
+import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.localloop.DatabaseHelper;
 import com.example.localloop.R;
 import com.example.localloop.model.Category;
 import com.example.localloop.model.Event;
 import com.example.localloop.DashboardActivity;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SearchEventsActivity extends AppCompatActivity {
 
@@ -61,7 +50,6 @@ public class SearchEventsActivity extends AppCompatActivity {
         setupCategorySpinner();
         setupRecyclerView();
         setupListeners();
-
         loadAllEvents();
 
         buttonReturn.setOnClickListener(v -> {
@@ -77,7 +65,6 @@ public class SearchEventsActivity extends AppCompatActivity {
         List<Category> categories = dbHelper.getAllCategories();
         categoryList.clear();
         categoryMap.clear();
-
         categoryList.add("All");
 
         for (Category cat : categories) {
@@ -113,14 +100,21 @@ public class SearchEventsActivity extends AppCompatActivity {
 
             @Override
             public void onJoinClick(Event event) {
+                if (username == null) {
+                    Toast.makeText(SearchEventsActivity.this, "Error: Username not found. Please log in again.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
                 if (!dbHelper.hasUserJoinedEvent(username, event.getId())) {
                     dbHelper.joinEvent(username, event.getId());
-                    Toast.makeText(SearchEventsActivity.this, "You have joined this event!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SearchEventsActivity.this, "Request sent", Toast.LENGTH_SHORT).show();
+                    loadAllEvents();
                 } else {
-                    Toast.makeText(SearchEventsActivity.this, "You already joined this event.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SearchEventsActivity.this, "Already requested", Toast.LENGTH_SHORT).show();
                 }
             }
         });
+
         recyclerViewEvents.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewEvents.setAdapter(eventAdapter);
     }
@@ -152,19 +146,16 @@ public class SearchEventsActivity extends AppCompatActivity {
         String selectedCategory = spinnerCategory.getSelectedItem().toString();
 
         filteredEvents.clear();
-
         for (Event event : allEvents) {
             String eventCategoryName = categoryMap.getOrDefault(event.getCategoryId(), "Unknown");
 
             boolean matchesName = event.getName().toLowerCase().contains(searchQuery);
-            boolean matchesCategory = selectedCategory.equals("All") ||
-                    eventCategoryName.equalsIgnoreCase(selectedCategory);
+            boolean matchesCategory = selectedCategory.equals("All") || eventCategoryName.equalsIgnoreCase(selectedCategory);
 
             if (matchesName && matchesCategory) {
                 filteredEvents.add(event);
             }
         }
-
         eventAdapter.notifyDataSetChanged();
     }
 }

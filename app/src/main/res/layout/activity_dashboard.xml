@@ -19,25 +19,13 @@
         android:id="@+id/buttonAddEvent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Add Event" />
+        android:text="Create Event" />
 
     <Button
-        android:id="@+id/buttonManageCategories"
+        android:id="@+id/buttonViewJoinRequests"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Manage Categories" />
-
-    <Button
-        android:id="@+id/buttonSearchEvents"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="My Events" />
-
-    <Button
-        android:id="@+id/buttonJoinEvents"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Join Events" />
+        android:text="View Join Requests" />
 
     <Button
         android:id="@+id/buttonLogout"
@@ -45,4 +33,12 @@
         android:layout_height="wrap_content"
         android:text="Logout"
         android:layout_marginTop="32dp"/>
+
+    <Button
+        android:id="@+id/categoryBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Manage Categories"
+        android:layout_marginTop="16dp"
+        android:layout_gravity="center_horizontal"/>
 </LinearLayout>

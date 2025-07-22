@@ -7,14 +7,11 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.example.localloop.DatabaseHelper;
 import com.example.localloop.R;
+import com.example.localloop.DatabaseHelper;
 import com.example.localloop.model.Category;
 import com.example.localloop.model.Event;
-import com.example.localloop.DashboardActivity;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -25,21 +22,16 @@ public class AddEventActivity extends AppCompatActivity {
     private Button buttonPickDate, buttonPickTime, buttonSubmit, buttonReturn;
     private TextView textViewDateTime;
 
-    private DatabaseHelper dbHelper;
-    private String selectedDate = "", selectedTime = "";
+    private String selectedDate = "", selectedTime = "", organizerUsername = "";
     private List<Category> categoryList;
-    private String username, role;
+    private DatabaseHelper db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_event);
 
-        // Get role and username
-        username = getIntent().getStringExtra("username");
-        role = getIntent().getStringExtra("role");
-
-        // Bind views
+        db = new DatabaseHelper(this);
         editTextName = findViewById(R.id.editTextName);
         editTextDescription = findViewById(R.id.editTextDescription);
         editTextFee = findViewById(R.id.editTextFee);
@@ -47,118 +39,82 @@ public class AddEventActivity extends AppCompatActivity {
         buttonPickDate = findViewById(R.id.buttonPickDate);
         buttonPickTime = findViewById(R.id.buttonPickTime);
         buttonSubmit = findViewById(R.id.buttonSubmit);
-        textViewDateTime = findViewById(R.id.textViewDateTime);
         buttonReturn = findViewById(R.id.buttonReturn);
+        textViewDateTime = findViewById(R.id.textViewDateTime);
 
-        // DB helper
-        dbHelper = new DatabaseHelper(this);
+        // Receive username from intent
+        organizerUsername = getIntent().getStringExtra("username");
 
-        // Load categories into Spinner
         loadCategories();
 
-        // Pickers
         buttonPickDate.setOnClickListener(v -> pickDate());
         buttonPickTime.setOnClickListener(v -> pickTime());
 
-        // Submit
-        buttonSubmit.setOnClickListener(v -> submitEvent());
+        buttonSubmit.setOnClickListener(v -> {
+            String name = editTextName.getText().toString().trim();
+            String description = editTextDescription.getText().toString().trim();
+            String feeStr = editTextFee.getText().toString().trim();
+            if (name.isEmpty() || description.isEmpty() || feeStr.isEmpty() || selectedDate.isEmpty() || selectedTime.isEmpty()) {
+                Toast.makeText(this, "Please fill all fields.", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-        // Return button
+            double fee;
+            try {
+                fee = Double.parseDouble(feeStr);
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Invalid fee format.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Category selectedCategory = categoryList.get(spinnerCategory.getSelectedItemPosition());
+
+            Event event = new Event();
+            event.setName(name);
+            event.setDescription(description);
+            event.setFee(fee);
+            event.setCategoryId(selectedCategory.getId());
+            event.setDate(selectedDate);
+            event.setTime(selectedTime);
+            event.setOrganizerUsername(organizerUsername); // SET organizer!
+
+            db.addEvent(event);
+            Toast.makeText(this, "Event added successfully.", Toast.LENGTH_SHORT).show();
+        });
+
         buttonReturn.setOnClickListener(v -> {
-            Intent intent = new Intent(AddEventActivity.this, DashboardActivity.class);
-            intent.putExtra("username", username);
-            intent.putExtra("role", role);
-            startActivity(intent);
-            finish();
+            finish(); // Return to dashboard
         });
     }
 
     private void loadCategories() {
-        categoryList = dbHelper.getAllCategories();
-        List<String> names = new ArrayList<>();
-        for (Category c : categoryList) {
-            names.add(c.getName());
-        }
-        if (names.isEmpty()) {
-            Toast.makeText(this, "No categories available. Please add one.", Toast.LENGTH_LONG).show();
-        }
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, names);
+        categoryList = db.getAllCategories();
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item,
+                categoryList.stream().map(Category::getName).toArray(String[]::new));
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCategory.setAdapter(adapter);
     }
 
-
     private void pickDate() {
-        Calendar c = Calendar.getInstance();
-        DatePickerDialog dpd = new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
-            selectedDate = dayOfMonth + "/" + (month + 1) + "/" + year;
-            updateDateTimeText();
-        }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
-        dpd.show();
+        Calendar calendar = Calendar.getInstance();
+        new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+            selectedDate = year + "-" + (month + 1) + "-" + dayOfMonth;
+            updateDateTimeDisplay();
+        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
     }
 
     private void pickTime() {
-        Calendar c = Calendar.getInstance();
-        TimePickerDialog tpd = new TimePickerDialog(this, (view, hourOfDay, minute) -> {
+        Calendar calendar = Calendar.getInstance();
+        new TimePickerDialog(this, (view, hourOfDay, minute) -> {
             selectedTime = String.format("%02d:%02d", hourOfDay, minute);
-            updateDateTimeText();
-        }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), true);
-        tpd.show();
+            updateDateTimeDisplay();
+        }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show();
     }
 
-    private void updateDateTimeText() {
-        textViewDateTime.setText("Date: " + selectedDate + " Time: " + selectedTime);
-    }
-
-    private void submitEvent() {
-        String name = editTextName.getText().toString().trim();
-        String desc = editTextDescription.getText().toString().trim();
-        String feeStr = editTextFee.getText().toString().trim();
-
-        // Validate name
-        if (name.isEmpty()) {
-            editTextName.setError("Name required");
-            return;
-        }
-
-        // Validate description
-        if (desc.length() < 5) {
-            editTextDescription.setError("Description too short");
-            return;
-        }
-
-        // Validate fee
-        double fee = 0;
-        try {
-            fee = Double.parseDouble(feeStr);
-            if (fee < 0) throw new NumberFormatException();
-        } catch (NumberFormatException e) {
-            editTextFee.setError("Fee must be a number ≥ 0");
-            return;
-        }
-
-        // Validate date and time
-        if (selectedDate.isEmpty() || selectedTime.isEmpty()) {
-            Toast.makeText(this, "Please pick a date and time", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Validate category
-        if (categoryList == null || categoryList.isEmpty()) {
-            Toast.makeText(this, "No categories available", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        int categoryPosition = spinnerCategory.getSelectedItemPosition();
-        int categoryId = categoryList.get(categoryPosition).getId();
-
-        // Create Event and insert
-        Event event = new Event(0, name, desc, fee, categoryId, selectedDate, selectedTime);
-        long id = dbHelper.insertEvent(event);
-        if (id > 0) {
-            Toast.makeText(this, "Event added!", Toast.LENGTH_SHORT).show();
-            finish(); // Close activity
-        } else {
-            Toast.makeText(this, "Error adding event.", Toast.LENGTH_SHORT).show();
+    private void updateDateTimeDisplay() {
+        if (!selectedDate.isEmpty() && !selectedTime.isEmpty()) {
+            textViewDateTime.setText(selectedDate + " " + selectedTime);
         }
     }
 }

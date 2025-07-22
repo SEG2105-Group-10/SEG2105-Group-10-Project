@@ -5,78 +5,91 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.localloop.ui.category.AddEventActivity;
 import com.example.localloop.ui.category.CategoryListActivity;
+import com.example.localloop.ui.category.ManageJoinRequestsActivity;
+import com.example.localloop.ui.category.AddEventActivity;
 import com.example.localloop.ui.category.SearchEventsActivity;
-import com.example.localloop.ui.category.ParticipantJoinEventsActivity;
 
 public class DashboardActivity extends AppCompatActivity {
 
-    private String username, firstname, role;
+    private String username, role;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
 
-        username = getIntent().getStringExtra("username");
-        firstname = getIntent().getStringExtra("firstname");
-        role = getIntent().getStringExtra("role");
+        TextView welcomeMessage = findViewById(R.id.welcomeMessage);
+        Button addEventBtn = findViewById(R.id.buttonAddEvent);
+        Button viewRequestsBtn = findViewById(R.id.buttonViewJoinRequests);
+        Button logoutBtn = findViewById(R.id.buttonLogout);
+        Button categoryBtn = findViewById(R.id.categoryBtn);
 
-        TextView welcomeText = findViewById(R.id.welcomeMessage);
-        if (firstname != null && role != null) {
-            welcomeText.setText("Welcome " + firstname + "! You are logged in as \"" + role + "\".");
+        // Get and normalize intent extras
+        username = getIntent().getStringExtra("username");
+        role = getIntent().getStringExtra("role");
+        if (role != null) role = role.trim().toLowerCase();
+
+        welcomeMessage.setText("Welcome, " + username + "!");
+
+        // Hide all buttons initially
+        addEventBtn.setVisibility(View.GONE);
+        viewRequestsBtn.setVisibility(View.GONE);
+        categoryBtn.setVisibility(View.GONE);
+
+        // Assign role-based button logic
+        if ("participant".equals(role)) {
+            addEventBtn.setVisibility(View.VISIBLE);
+            addEventBtn.setText("My Events");
+            addEventBtn.setOnClickListener(v -> {
+                Intent intent = new Intent(this, SearchEventsActivity.class);
+                intent.putExtra("username", username);
+                intent.putExtra("role", role);
+                startActivity(intent);
+            });
+        } else if ("organizer".equals(role)) {
+            addEventBtn.setVisibility(View.VISIBLE);
+            viewRequestsBtn.setVisibility(View.VISIBLE);
+
+            addEventBtn.setText("Create Event");
+            addEventBtn.setOnClickListener(v -> {
+                Intent intent = new Intent(this, AddEventActivity.class);
+                intent.putExtra("username", username);
+                startActivity(intent);
+            });
+
+            viewRequestsBtn.setOnClickListener(v -> {
+                Intent intent = new Intent(this, ManageJoinRequestsActivity.class);
+                intent.putExtra("username", username);
+                intent.putExtra("role", role);
+                startActivity(intent);
+            });
+        } else if ("admin".equals(role)) {
+            addEventBtn.setVisibility(View.VISIBLE);
+            categoryBtn.setVisibility(View.VISIBLE);
+
+            addEventBtn.setText("Create Event");
+            addEventBtn.setOnClickListener(v -> {
+                Intent intent = new Intent(this, AddEventActivity.class);
+                intent.putExtra("username", username);
+                intent.putExtra("role", role);
+                startActivity(intent);
+            });
+
+            categoryBtn.setOnClickListener(v -> {
+                Intent intent = new Intent(this, CategoryListActivity.class);
+                intent.putExtra("username", username);
+                intent.putExtra("role", role); // ensure role is preserved
+                startActivity(intent);
+            });
         }
 
-        Button buttonAddEvent = findViewById(R.id.buttonAddEvent);
-        Button buttonManageCategories = findViewById(R.id.buttonManageCategories);
-        Button buttonSearchEvents = findViewById(R.id.buttonSearchEvents);
-        Button buttonJoinEvents = findViewById(R.id.buttonJoinEvents);
-        Button buttonLogout = findViewById(R.id.buttonLogout);
-
-        boolean isAdmin = "admin".equalsIgnoreCase(role);
-        boolean isParticipant = "participant".equalsIgnoreCase(role);
-
-        buttonAddEvent.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
-        buttonManageCategories.setVisibility(isAdmin ? View.VISIBLE : View.GONE);
-        buttonJoinEvents.setVisibility(isParticipant ? View.VISIBLE : View.GONE);
-
-        buttonAddEvent.setOnClickListener(v -> {
-            Intent intent = new Intent(this, AddEventActivity.class);
-            intent.putExtra("username", username);
-            intent.putExtra("role", role);
+        logoutBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(DashboardActivity.this, MainActivity.class);
             startActivity(intent);
-        });
-
-        buttonManageCategories.setOnClickListener(v -> {
-            Intent intent = new Intent(this, CategoryListActivity.class);
-            intent.putExtra("username", username);
-            intent.putExtra("role", role);
-            startActivity(intent);
-        });
-
-        buttonSearchEvents.setOnClickListener(v -> {
-            Intent intent = new Intent(this, SearchEventsActivity.class);
-            intent.putExtra("username", username);
-            intent.putExtra("role", role);
-            startActivity(intent);
-        });
-
-        buttonJoinEvents.setOnClickListener(v -> {
-            Intent intent = new Intent(this, ParticipantJoinEventsActivity.class);
-            intent.putExtra("username", username);
-            intent.putExtra("firstname", firstname);
-            intent.putExtra("role", role);
-            startActivity(intent);
-        });
-
-        buttonLogout.setOnClickListener(v -> {
-            Intent intent = new Intent(this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
+            finish();
         });
     }
 }
